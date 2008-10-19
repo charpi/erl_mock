@@ -1,0 +1,21 @@
+%% -*-erlang-*-   ; force emacs to enter erlang-mode
+main ([]) ->
+    try
+	os:cmd("epmd&"),
+	true = code: add_path ("/home/charpi/projects/extremeforge/ebin"),
+	net_kernel: start(['forge@localhost',shortnames]),
+	Tester = extremeforge: agency_tester_with_slave ('slave@localhost', 9091),
+	
+	Erlang_options = extremeforge: erlang_options (Tester),	
+	Directory = ".",
+	sentinel: start_link (Directory, Erlang_options),
+	receive
+	    stop_the_forge -> ok
+	end,
+	ok
+    catch Error: Reason ->
+	    Stack = erlang: get_stacktrace(),
+	    Params = [{Error,Reason}, Stack],
+	    io: fwrite("Start_forge failed  ~p:~p~n",Params)
+    end.
+
